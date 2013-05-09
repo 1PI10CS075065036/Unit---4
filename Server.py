@@ -1,5 +1,5 @@
-#!C:\Python27\python.exe
-from DB import Start
+#!/usr/bin/python
+from Start import Start
 import cgi, cgitb 
 form = cgi.FieldStorage() 
 query = form.getvalue('query')

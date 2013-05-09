@@ -3,7 +3,7 @@ import urllib2
 import re
 import random
 import time
-from final import insert
+from DB_OP import insert
 
 def Clean_Data(robj):
     elem=[]
