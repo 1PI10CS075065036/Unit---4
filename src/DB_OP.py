@@ -66,13 +66,12 @@ def details(z,counter):
 def con():
 	from pymongo import MongoClient
 	client=MongoClient("localhost",27017)
-	db = client['test_database']
-	collection = db['test_collection']
-	return db,collection
+	db = client['findb']
+	return db
 
 def insert(z):
 
-	db,collection=con()
+	db=con()
 	
 	#d=raw_input("enter number of companies\n")
 	e=1
@@ -415,7 +414,7 @@ def get_where(a,noa):
 
 
 def prcs(a):
-	db,collection=con()
+	db=con()
 	posts = db.posts
 	m=a.split()
         n=len(m)
