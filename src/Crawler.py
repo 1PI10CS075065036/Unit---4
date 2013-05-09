@@ -5,9 +5,14 @@ import datetime
 from Miner import Get_Data
 Base_URL='http://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=XXXXX&type=10-Q&dateb=2013&owner=exclude&count=100'
 count =0
+def Get_Quar(year):
+    return "Q"+str(((int(year[5:7])-1)//3)+1)
+
+
 def Get_Urls(data):
     url=[]
     year=[]
+    quar=[]
     try:
         copydata=copy.deepcopy(data)
         comp_index= copydata.index("companyName")
@@ -22,10 +27,14 @@ def Get_Urls(data):
             url.append('http://www.sec.gov'+data[finindex+1:data.index('"',finindex+1)])
             data=data[data.index("<td>"):]
             data=data[data.index("<td>"):]
-            year.append(int(data[4:data.index("-")]))
-        return url,copydata,year
+            #year.append(data[4:data.index("<")])
+            year.append(data[4:14])
+	    quar.append(Get_Quar(year[i]))
+            #print data[4:]
+	    #year.append(int(data[4:]))
+        return url,copydata,year,quar
     except:
-        return [],"",[]
+        return [],"",[],[]
 
 def Get_Archive_From_Url(url,Rep):
     Rep=Rep.lower()
@@ -59,19 +68,19 @@ def Start_Crawler(Field):
         temp=temp.replace('XXXXX',tick)
         temp=temp.replace('\n', '')
         temp=temp+'\n'#Generate The Required URLS to be Crawled
-     #   print temp
+       # print temp
         usock = urllib2.urlopen(temp)
         data = usock.read()
         usock.close()
         tick=tick.strip()
-        url,c_name,year= Get_Urls(data)
+        url,c_name,year,quar= Get_Urls(data)
         count=count+1
         finurl = Get_Archive_From_Url(url, Field)
-        print year
+        print year , quar
         if len(finurl) == 4:
-            Get_Data(year,[c_name,tick],finurl)
-    #        print 'thread started'
-            #thread.start_new_thread(Thread_Print,(year,[c_name,tick],finurl))
+            Get_Data([year,quar],[c_name,tick],finurl)
+            print 'thread started'
+#            thread.start_new_thread(Thread_Print,([year,quar],[c_name,tick],finurl))
 
 def Thread_Print(a,mess,count):
     try:
