@@ -71,7 +71,7 @@ def con():
 
 def insert(z):
 
-	db,collection=con()
+	db=con()
 	
 	#d=raw_input("enter number of companies\n")
 	e=1
@@ -414,7 +414,7 @@ def get_where(a,noa):
 
 
 def prcs(a):
-	db,collection=con()
+	db=con()
 	posts = db.posts
 	m=a.split()
         n=len(m)
