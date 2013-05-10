@@ -13,7 +13,7 @@ def Query(Que):
 
 
 def Start(Que):
-	RetMess = "Content-type:text/html\r\n\r\n"+"<html>\n<head>\n<title>Python 3</title>\n</head>\n<body>\n<br/><br/>\n<h2>Query Entered :: "+Que+"</h2>"
+	RetMess = "Content-type:text/html\r\n\r\n"+"<html>\n<head>\n<title>Python 4</title>\n</head>\n<body>\n<br/><br/>\n<h2>Query Entered :: "+Que+"</h2>"
 	Results = Query(Que)
 
 	
@@ -21,11 +21,14 @@ def Start(Que):
 
 	if type(Results) == types.ListType:
 		if len(Results) != 0:
-			RetMess = RetMess +  '\n<br/><br/>	\n<table>\n<caption>Results</caption>'
+			RetMess = RetMess +  '\n<br/><br/>	\n<table border="1">\n<caption>Results</caption>'
 			
 			for i in Results:
-				RetMess = RetMess + '<p>'+str(i)+'</p>'
-			
+				RetMess = RetMess + '<tr>'
+				for j in i.keys():
+					RetMess = RetMess + '<td>'+str(j)+'</td>'
+					RetMess = RetMess + '<td>'+str(i[j])+'</td>'
+				RetMess = RetMess + '</tr>'
 			
 			RetMess= RetMess + '\n</table>'
 		else:
