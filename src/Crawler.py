@@ -3,93 +3,91 @@ import copy
 import thread
 import datetime
 from Miner import Get_Data
-Base_URL='http://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=XXXXX&type=10-Q&dateb=2013&owner=exclude&count=100'
-count =0
-def Get_Quar(year):
-    return "Q"+str(((int(year[5:7])-1)//3)+1)
+import re
+from bs4 import BeautifulSoup
 
+Base_URL='http://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=ORCL&type=10-Q&dateb=2013&owner=exclude&count=100'
 
-def Get_Urls(data):
-    url=[]
-    year=[]
-    quar=[]
-    try:
-        copydata=copy.deepcopy(data)
-        comp_index= copydata.index("companyName")
-        copydata=copydata[comp_index:]
-        copydata=copydata[copydata.index(">")+1:copydata.index("<")]
-        for i in range(4): 
-            index1= data.index("documentsbutton")
-            data = data[index1:]
-            index2= data.index("href")
-            data = data[index2:]
-            finindex = data.index('"')
-            url.append('http://www.sec.gov'+data[finindex+1:data.index('"',finindex+1)])
-            data=data[data.index("<td>"):]
-            data=data[data.index("<td>"):]
-            #year.append(data[4:data.index("<")])
-            year.append(data[4:14])
-	    quar.append(Get_Quar(year[i]))
-            #print data[4:]
-	    #year.append(int(data[4:]))
-        return url,copydata,year,quar
-    except:
-        return [],"",[],[]
-
-def Get_Archive_From_Url(url,Rep):
-    Rep=Rep.lower()
-    finurl=[]
-    try:
-        for u in url:
-            usock = urllib2.urlopen(u)
-            data = usock.read()
-            usock.close()
-            copydata=data
-            data=data.lower()
-            index1=data.index(Rep)
-            copydata = copydata[:index1]
-            index2=copydata.rfind(');">')
-            copydata=copydata[:index2]
-            repindex=copydata[-1]     
-            copydata=copydata[copydata.index(''+repindex+'] ='):]
-            copydata=copydata[copydata.index('"')+1:]
-            copydata=copydata[:copydata.index(';')-1]
-            copydata="http://www.sec.gov"+copydata
-            finurl.append(copydata);
-    finally:
-        return finurl
-
-
-def Start_Crawler(Field):
-    global count
-    for tick in     open('Ticker_Sym.txt'):
+def Start_Crawler():
+    for tick in open('Ticker_Sym.txt'):
         tick.strip()
         temp=Base_URL
         temp=temp.replace('XXXXX',tick)
         temp=temp.replace('\n', '')
         temp=temp+'\n'#Generate The Required URLS to be Crawled
-       # print temp
         usock = urllib2.urlopen(temp)
         data = usock.read()
         usock.close()
+        soup = BeautifulSoup(data)
         tick=tick.strip()
-        url,c_name,year,quar= Get_Urls(data)
-        count=count+1
-        finurl = Get_Archive_From_Url(url, Field)
-        print year , quar
-        if len(finurl) == 4:
-            Get_Data([year,quar],[c_name,tick],finurl)
-            print 'thread started'
-#            thread.start_new_thread(Thread_Print,([year,quar],[c_name,tick],finurl))
+        url,c_name,year,quarter= Get_Urls(soup)
+        print "url:\n",url,"\nc_name:\n",c_name,"\nyear:\n",year,"\nQ:\n",quarter
+        #count=count+1
+        Fin_url = Get_Archive_From_Url(url)
+        print "\nfinalurl:\n",Fin_url
+        if len(Fin_url) == 4:
+            Get_Data(year,quarter,[c_name,tick],Fin_url)
 
-def Thread_Print(a,mess,count):
+def Get_Quarter(year):
+    return "Q"+str(((int(year[5:7])-1)//3)+1)
+
+def Get_Urls(soup):
+    url=[]
+    year=[]
+    quarter=[]
     try:
-        print a,mess,count
+        copysoup = soup
+        company_name = str(soup.find("span", class_="companyName").contents[0])
+        company_name = company_name.strip()
+        Url = soup.find_all('a',id="interactiveDataBtn",limit=4)
+        for i in Url:
+            pattern = r'"(.*?)"'
+            robj = re.search(pattern, str(i), re.S|re.I)
+            url.append("http://www.sec.gov"+robj.group(1))
+        td = copysoup.find_all('td')
+        count = 0
+        for i in td:
+            pattern = r'([0-9]{4})-([0-9]{2})-([0-9]{2})'
+            robj1 = re.search(pattern,str(i),re.S|re.I)
+            if robj1:
+                    if int(robj1.group(1))<=2013 and count<4:
+                            year.append(robj1.group(1))
+                            count = count+1
+                            quarter.append(Get_Quarter(str(robj1.group())))
+                    else:
+                            pass
+            else:
+                    pass
+        
+        return url,company_name,year,quarter
     except Exception,e:
-        print "Exception",e
+        print e
+        return [],"",[],[]
+
+def Get_Archive_From_Url(url):
+    Fin_url=[]
+    try:
+        for u in url:
+            usock = urllib2.urlopen(u)
+            data = usock.read()
+            copydata=data
+            usock.close()
+            soup = BeautifulSoup(data)
+            copysoup = soup
+            soup = str(soup)
+            temp = copysoup.find("a",text=re.compile(r'(.*?)((statemen(ts|t)\sof\s(income|earnings|operatio(ns|n)))|(income\sstatemen(ts|t)))(.*?)',re.S|re.M|re.I))
+            robj = re.search(r'href="javascript\:loadReport\((.*?)\)\;"',str(temp), re.S|re.I|re.M)
+            temp = robj.group(1)
+            copydata=copydata[copydata.index(''+temp+'] ='):]
+            copydata=copydata[copydata.index('"')+1:]
+            copydata=copydata[:copydata.index(';')-1]
+            copydata="http://www.sec.gov"+copydata
+            Fin_url.append(copydata);
+    finally:
+        return Fin_url
 
 if __name__ == '__main__':
    # a = datetime.datetime.now().replace(microsecond=0)
-    Start_Crawler('CONSOLIDATED STATEMENTS OF OPERATIONS')
+    Start_Crawler()
     #b = datetime.datetime.now().replace(microsecond=0)
     #print(b-a)

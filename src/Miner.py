@@ -3,7 +3,10 @@ import urllib2
 import re
 import random
 import time
-from DB_OP import insert
+from bs4 import BeautifulSoup
+#from DB_OP import insert
+
+send_set=[[],[],[],[]]
 
 def Clean_Data(robj):
     elem=[]
@@ -31,35 +34,34 @@ def Check_Empty(z):
     flag=0
     for i in z:
         if i!=0:
-#            print z
+# print z
             pass
         else:
-#            print z
+# print z
             flag=1
             break
     if flag==0:
-#        print z
+# print z
         return z
     else:
-#        print "aha",z
+# print "aha",z
         return 0
 
 def Calculations(y):
     #print y
-    z=y[2]+y[3]+y[4]
+    z=y[5]+y[6]+y[7]
     y.append(z)
-    z=y[0]-y[5]
+    z=y[4]-y[9]
     y.append(z)
-    z=(float(y[6])/y[0])*100
+    z=(float(y[10])/y[4])*100
     y.append(z)
-    z=(float(y[3])/y[0])
+    z=(float(y[6])/y[4])
     y.append(z)
-    z=(float(y[6])/y[0])
+    z=(float(y[10])/y[4])
     y.append(z)
     return y
 
-def Mine_Data(year,data):
-    z=[]
+def Mine_Data(year,z,data):
     print"h0"
     pattern = r'<td (.*?)><a (.*?)>(.*?)basic(.*?)</a></td>(.*?)</tr>'
     robj = re.search(pattern, str(data),re.DOTALL|re.I)
@@ -119,36 +121,37 @@ def Mine_Data(year,data):
         return z.append(0)
     return z
 
-def Get_Data(y,details,url_list):
-    send_set=[]
+def Get_Data(y,q,details,url_list):
     temp=[]
     year=y
     det=details
-    print details
-    for i in details:
-        i=i.strip()
-        i=i.replace(" ","_")
-        send_set.append(i)
-    
+    for j in range(4):
+        for i in details:
+            i=i.strip()
+            i=i.replace(" ","_")
+            send_set[j].append(i)
+        send_set[j].append(q[j])
+    print send_set
+    x=0
     for i in url_list:
-        print i
         usock = urllib2.urlopen(i)
         data = usock.read()
         usock.close()
+        soup = BeautifulSoup(data)
         try:
-            a=Mine_Data(year,data)
+            send_set[x]=Mine_Data(year,send_set[x],data)
         except Exception,e:
             print e
-        y= Check_Empty(a)
+        send_set[x]= Check_Empty(send_set[x])
         #print year
-        if y!=0:
-            y=Calculations(y)
+        if send_set[x]!=0:
+            send_set[x]=Calculations(send_set[x])
             for i in range(1):
-                y.append(year[i])
+                send_set[x].append(year[i])
             year.pop(0)
-            temp.append(y)
-    send_set.append(temp)
-    insert(send_set)
+        x=x+1
+    print send_set
+    #insert(send_set)
     
 
 if __name__ == "__main__":
