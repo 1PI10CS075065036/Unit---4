@@ -16,7 +16,7 @@ sting=""
 
 
 
-def read(z) :
+def read(z) :#reads all the data from list and returns a list of with proper structured data
 
     
 
@@ -32,7 +32,8 @@ def read(z) :
 
 
 
-def details(z):
+def details(z):#from the crawled data list extract the data in a orderly manner
+
 
 
 
@@ -104,7 +105,7 @@ def details(z):
 
 
 
-def insert(z):
+def insert(z):#the function for inserting data into a collection and into the db
 
 
 
@@ -134,7 +135,7 @@ def insert(z):
 
 
 
-def getres(cursor):
+def getres(cursor):#get results from object list returned from processed query
 
     ret=[]
 
@@ -148,7 +149,7 @@ def getres(cursor):
 
 
 
-def con():
+def con():#make connections
 
     #from pymongo import MongoClient
 
@@ -160,7 +161,7 @@ def con():
 
 
 
-def initlist(i):
+def initlist(i):#test initialisation list for debugging test
 
     if i== 1:
 
@@ -180,7 +181,7 @@ def initlist(i):
 
 
 
-def wbsp(a,n):
+def wbsp(a,n):#removes sp chars and spaces
 
     i=0
 
@@ -206,7 +207,7 @@ def wbsp(a,n):
 
 
 
-def nums(c):
+def nums(c):#number of select aruments
 
     n=len(c)
 
@@ -236,7 +237,7 @@ def nums(c):
 
 
 
-def posw(w,n):
+def posw(w,n):#position of where
 
     i=0
 
@@ -254,7 +255,7 @@ def posw(w,n):
 
 
 
-def numa(c):
+def numa(c):#number of ands
 
     n=len(c)
 
@@ -282,7 +283,7 @@ def numa(c):
 
 
 
-def arwq(c,noa):
+def arwq(c,noa):#number of where arguments
 
     x=-2
 
@@ -332,7 +333,7 @@ def arwq(c,noa):
 
 
 
-def convert(x):
+def convert(x):#conversion from string to int and vice versa
 
     try:
 
@@ -348,7 +349,7 @@ def convert(x):
 
 
 
-def get(a,nos,noa):
+def get(a,nos,noa):#get the select and where dictionaries for querying mongodb
 
     #print a
 
@@ -370,7 +371,7 @@ def get(a,nos,noa):
 
 
 
-def get_sel(a,nos):
+def get_sel(a,nos):#get select dict
 
     s={}
 
@@ -404,7 +405,7 @@ def get_sel(a,nos):
 
 
 
-def get_where(a,noa):
+def get_where(a,noa):#get the where dictionary for query
 
     n=len(a)
 
@@ -488,7 +489,7 @@ def get_where(a,noa):
 
 
 
-def prcs(a):
+def prcs(a):#processing query
 
     db=con()
 
@@ -566,7 +567,7 @@ def prcs(a):
 
 
 
-def query():
+def query():#for starting the processing of query
     db=con()
     a=raw_input()
     prcs(a)
